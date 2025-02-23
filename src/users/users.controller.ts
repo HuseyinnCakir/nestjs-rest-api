@@ -1,14 +1,16 @@
 import { Body, Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { getUsersParamDto } from './dtos/get-users-param.dto';
+import { GetUsersParamDto } from './dtos/get-users-param.dto';
 import { PatchUserDto } from './dtos/patch-user-dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('users')
+@ApiTags('Users')
 export class UsersController {
 
     @Get('/:id')
     public getUsers(
-        @Param() getUsersParamDto: getUsersParamDto,
+        @Param() getUsersParamDto: GetUsersParamDto,
         @Query('limit',new DefaultValuePipe(10),ParseIntPipe) limit?: number,
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
     ){
