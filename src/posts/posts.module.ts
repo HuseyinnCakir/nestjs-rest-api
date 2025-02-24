@@ -1,4 +1,5 @@
-import { Module, Post } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { Post } from './post.entity';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
 import { UsersModule } from 'src/users/users.module';
