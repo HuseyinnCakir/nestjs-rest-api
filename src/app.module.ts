@@ -1,17 +1,30 @@
-import { Module } from '@nestjs/common';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
-import { PostsModule } from './posts/posts.module';
 import { AuthModule } from './auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { TagsModule } from './tags/tags.module';
+import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
+import { JwtModule } from '@nestjs/jwt';
 import { MetaOptionsModule } from './meta-options/meta-options.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Module } from '@nestjs/common';
+import { PaginationModule } from './common/pagination/pagination.module';
+import { PostsModule } from './posts/posts.module';
+import { TagsModule } from './tags/tags.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+/**
+ * Importing Entities
+ * */
+import { User } from './users/user.entity';
+import { UsersModule } from './users/users.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import enviromentValidation from './config/enviroment.validation';
-import { PaginationModule } from './common/pagination/pagination.module';
+import jwtConfig from './auth/config/jwt.config';
+import { DataResponseInterceptor } from './common/interceptors/data-response.inteceptor';
+
+// Get the current NODE_ENV
 const ENV = process.env.NODE_ENV;
 
 @Module({
@@ -41,11 +54,24 @@ const ENV = process.env.NODE_ENV;
         database: configService.get('database.name'),
       }),
     }),
+    ConfigModule.forFeature(jwtConfig),
+    JwtModule.registerAsync(jwtConfig.asProvider()),
     TagsModule,
     MetaOptionsModule,
     PaginationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthenticationGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: DataResponseInterceptor,
+    },
+    AccessTokenGuard,
+  ],
 })
 export class AppModule {}

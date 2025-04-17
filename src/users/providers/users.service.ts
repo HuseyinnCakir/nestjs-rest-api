@@ -1,5 +1,5 @@
 import { CreateUserDto } from './../dtos/create-user.dto';
-import { DataSource, Repository } from 'typeorm';
+import {  Repository } from 'typeorm';
 import { GetUsersParamDto } from '../dtos/get-users-param.dto';
 import {
   BadRequestException,
@@ -8,16 +8,21 @@ import {
   Inject,
   Injectable,
   RequestTimeoutException,
-  forwardRef,
 } from '@nestjs/common';
 import { User } from '../user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ConfigService, ConfigType } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
 import profileConfig from '../config/profile.config';
-import { UsersCreateManyProvider } from './user-create-many.provider';
+
 import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
 import { CreateUserProvider } from './create-user.provider';
 import { FindOneUserByEmailProvider } from './find-one-user-by-email.provider';
+
+import { CreateGoogleUserProvider } from './create-google-user.provider';
+import { GoogleUser } from '../interfaces/google-user.interface';
+import { FindOneByGoogleIdProvider } from './find-one-google-id-user.provider';
+import { UsersCreateManyProvider } from './user-create-many.provider';
+
 
 /**
  * Controller class for '/users' API endpoint
@@ -47,6 +52,15 @@ export class UsersService {
      * Inject findOneUserByEmailProvider
      */
     private readonly findOneUserByEmailProvider: FindOneUserByEmailProvider,
+
+    /**
+     * Inject findOneByGoogleIdProvider
+     */
+    private readonly findOneByGoogleIdProvider: FindOneByGoogleIdProvider,
+    /**
+     * Inject createGooogleUserProvider
+     */
+    private readonly createGooogleUserProvider: CreateGoogleUserProvider,
   ) {}
 
   /**
@@ -83,7 +97,7 @@ export class UsersService {
    * Public method used to find one user using the ID of the user
    */
   public async findOneById(id: number) {
-    let user;;
+    let user;
 
     try {
       user = await this.usersRepository.findOneBy({
@@ -115,5 +129,13 @@ export class UsersService {
   // Finds one user by email
   public async findOneByEmail(email: string) {
     return await this.findOneUserByEmailProvider.findOneByEmail(email);
+  }
+
+  public async findOneByGoogleId(googleId: string) {
+    return await this.findOneByGoogleIdProvider.findOneByGoogleId(googleId);
+  }
+
+  public async createGoogleUser(googleUser: GoogleUser) {
+    return await this.createGooogleUserProvider.createGoogleUser(googleUser);
   }
 }
